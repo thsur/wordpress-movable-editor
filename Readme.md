@@ -1,0 +1,1 @@
+Swaps WYSIWYG content editor against a new one wrapped in a movable meta box.
