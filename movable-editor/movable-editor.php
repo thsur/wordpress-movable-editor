@@ -4,7 +4,7 @@
 
 Plugin Name: Movable Editor
 Description: The WYSIWYG content editor wrapped in a movable meta box.
-Version:     0.5
+Version:     1.0
 Plugin URI:  https://github.com/pontycode/wordpress-movable-editor/
 Author:      Thsurs
 Author URI:  https://github.com/pontycode
@@ -158,11 +158,46 @@ class MovableEditor {
     protected $config = array();
 
     /**
+     * Editor id
+     *
+     * @var Integer
+     */
+    protected $editor_id = null;
+
+    /**
      * Meta box title(s)
      *
      * @var Array
      */
     protected $title = array();
+
+    /**
+     * What base screen we are on, if any.
+     *
+     * @return String|false
+     */
+    protected function getCurrentScreen() {
+
+        $screen = get_current_screen();
+
+        if (!($screen && property_exists($screen, 'base'))) {
+
+            return false;
+        }
+
+        return $screen->post_type ? $screen->post_type : $screen->base;
+    }
+
+    /**
+     * Whether the given screen is in the list of allowed ones.
+     *
+     * @param  String
+     * @return Boolean
+     */
+    protected function isScreenAllowed($screen) {
+
+        return in_array($screen, $this->screens);
+    }
 
     /**
      * Remove default editor
@@ -186,17 +221,38 @@ class MovableEditor {
 
         $config = $this->config;
 
+        // Add editor
+
         add_action('add_meta_boxes', function () use ($config) {
 
-            foreach ($this->screens as $screen) {
+            $screen = $this->getCurrentScreen();
 
-                $config['screen'] = $screen;
-                $config['title']  = isset($this->title[$screen]) ? $this->title[$screen]
-                                    :  $this->title['default'];
+            if (!$this->isScreenAllowed($screen)) {
 
-                call_user_func_array('add_meta_box', $config);
+                return;
             }
+
+            $config['screen'] = $screen;
+            $config['title']  = isset($this->title[$screen]) ? $this->title[$screen]
+                                :  $this->title['default'];
+
+            call_user_func_array('add_meta_box', $config);
         });
+
+        // Replace post content with editor content before saving a post
+
+        add_filter('content_save_pre', function ($content) {
+
+            $screen = $this->getCurrentScreen();
+
+            if ($this->isScreenAllowed($screen) && isset($_POST[$this->editor_id])) {
+
+                return $_POST[$this->editor_id];
+            }
+
+            return $content;
+
+        }, 10, 1);
     }
 
     /**
@@ -226,6 +282,8 @@ class MovableEditor {
             'context'  => 'normal',
             'priority' => 'high'
         );
+
+        $this->editor_id = Config::$editor_id;
 
         if (is_array(Config::$title)) {
 

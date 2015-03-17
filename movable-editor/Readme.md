@@ -1,4 +1,33 @@
 
+# WordPress Movable Editor
+
+Change the position of WordPress' WYSIWYG content editor by moving it around like any other element on an editing screen. 
+
+## What it does
+
+By default, WordPress' content editor isn't rendered inside a movable box, so it's fixed in place. This plugin puts one around it. 
+
+## What it really does
+
+Technically, it replaces the default editor with a new instance of it. 
+
+Currently, this also changes the editor's distraction free mode back to fullscreen mode. 
+
+Limitations: Doesn't work with the distraction free, but with fullscreen mode. This is/seems to be a limitation of WP. How to get it work is beyond the scope of this Readme. Another time/place/idea.
+
+## Installation
+
+## Usage
+
+## Configuration   
+
+
+Unlike most other elements on an editing screen, it can't be moved around, its position can't change. This plugin fixes that. 
+
+
+It can't be moved around, nor can 
+
+
 
 Swaps WYSIWYG content editor against a new one wrapped in a movable meta box.
 
