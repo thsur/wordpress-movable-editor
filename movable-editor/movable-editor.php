@@ -78,31 +78,23 @@ class Config {
     public static $id = 'movable_editor';
 
     /**
-     * Meta box title
+     * Meta box title(s)
      *
      * See http://codex.wordpress.org/Function_Reference/add_meta_box
      *
-     * @var String
+     * To give the box a title based on a specific post type,
+     * add it as a key:
+     *
+     * \MovableEditor\Config::$title = array(
+     *
+     *     'default' => '&nbsp;',
+     *     'post'    => 'Post Content',
+     *     'page'    => 'Page Content'
+     * );
+     *
+     * @var Array
      */
-    public static $title = '&nbsp;';
-
-    /**
-     * Meta box context
-     *
-     * See http://codex.wordpress.org/Function_Reference/add_meta_box
-     *
-     * @var String
-     */
-    public static $context = 'advanced';
-
-    /**
-     * Meta box priority
-     *
-     * See http://codex.wordpress.org/Function_Reference/add_meta_box
-     *
-     * @var String
-     */
-    public static $priority = 'high';
+    public static $title = array('default' => '&nbsp;');
 
     /**
      * Editor id
@@ -166,6 +158,13 @@ class MovableEditor {
     protected $config = array();
 
     /**
+     * Meta box title(s)
+     *
+     * @var Array
+     */
+    protected $title = array();
+
+    /**
      * Remove default editor
      *
      * @return void
@@ -192,6 +191,9 @@ class MovableEditor {
             foreach ($this->screens as $screen) {
 
                 $config['screen'] = $screen;
+                $config['title']  = isset($this->title[$screen]) ? $this->title[$screen]
+                                    :  $this->title['default'];
+
                 call_user_func_array('add_meta_box', $config);
             }
         });
@@ -204,15 +206,36 @@ class MovableEditor {
      */
     protected function setup() {
 
-        $this->config = array(
+        $this->config = array( // Important: Don't change key order (since config is
+                               // passed to WP as a non-associative array later on).
 
             'id'       => Config::$id,
-            'title'    => Config::$title,
+            'title'    => null,
             'callback' => Config::$callback,
             'screen'   => null,
-            'context'  => Config::$context,
-            'priority' => Config::$priority
+
+            // We want the editor to appear first, just like
+            // the default editor does.
+            //
+            // We _could_ set the context to 'advanced' instead,
+            // but this would cause an empty sortable area to be
+            // rendered below the 'title' field, resulting in the
+            // exact same gap described here:
+            // http://pytest-commit.git.net/wp-trac/dsc61814.html
+
+            'context'  => 'normal',
+            'priority' => 'high'
         );
+
+        if (is_array(Config::$title)) {
+
+            $this->title = Config::$title;
+        }
+
+        if (!isset($this->title['default'])) {
+
+            $this->title['default'] = 'nbsp;';
+        }
 
         $screens = Config::$screens;
 
