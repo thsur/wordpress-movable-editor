@@ -1,53 +1,72 @@
 
-# WordPress Movable Editor
+# Movable Editor
 
 Change the position of WordPress' WYSIWYG content editor by moving it around like any other element on an editing screen. 
 
-## What it does
+## What It Does
 
-By default, WordPress' content editor isn't rendered inside a movable box, so it's fixed in place. This plugin puts one around it. 
+By default, WordPress' content editor isn't rendered inside a movable box, so it's fixed in place. This plugin puts a box around it to set it free to float.
 
-## What it really does
+## Limitations
 
-Technically, it replaces the default editor with a new instance of it. 
+Technically, the plugin replaces the default with a *new* editor that just _pretends_ to be the former to inherit its behaviour (like auto-saving). 
 
-Currently, this also changes the editor's distraction free mode back to fullscreen mode. 
-
-Limitations: Doesn't work with the distraction free, but with fullscreen mode. This is/seems to be a limitation of WP. How to get it work is beyond the scope of this Readme. Another time/place/idea.
+This has its limitations, though: As it currently stands, WordPress' new distraction free mode works in the default editor only, not in custom ones. Any non-default editor will, however, fall back to the old full screen mode in terms of distraction free writing, and so will this one. To some, this might be a feature.   
 
 ## Installation
 
+Download and unpack, then move the folder 'movable-editor' into your 'plugins' folder. Head over to your WordPress installation and activate the plugin in the admin area.
+
 ## Usage
+
+Just move the editor around, that's all. It will still sit where you left it next time you come around. Though you might want to [configure](#configuration) it a bit. 
 
 ## Configuration   
 
+Configuration happens solely in your theme's `functions.php`. Though you don't need to configure anything. Actually, there isn't really much to configure but:  
+* the screens on which the editor should show up (post, page, custom post type by default)
+* which name to give the box the editor is in
 
-Unlike most other elements on an editing screen, it can't be moved around, its position can't change. This plugin fixes that. 
+Anyway, fire up an editor, load your functions.php, and copy and paste the following sample configuration into it. Adjust it to suit your needs.
 
+For brevity, we'll assume the plugin is loaded and active, so we won't check for that (see this nice [write-up](http://queryloop.com/how-to-detect-if-a-wordpress-plugin-is-active/) on _QueryLoop_ on some ways to do it, though).
 
-It can't be moved around, nor can 
+```PHP
+if (is_admin()) {
 
+    // Operate on post and page screens (default setting)
+    \MovableEditor\Config::$screens = array('post', 'page');
 
+    // Include custom post types (default setting)
+    \MovableEditor\Config::$include_cpts = true; 
 
-Swaps WYSIWYG content editor against a new one wrapped in a movable meta box.
+    // Exclude a custom post type (or more of them)
+    \MovableEditor\Config::$exclude = array('acme');
 
-By default, 
+    // Change the default title of the editor's meta box
+    \MovableEditor\Config::$title['default'] = 'Content';
 
-## Configuration
+    // Add a different title per screen type
+    \MovableEditor\Config::$title['post'] = 'Post Content';
+    \MovableEditor\Config::$title['page'] = 'Page Content';
+    \MovableEditor\Config::$title['acme'] = 'Custom Post Type Content';
+}
+```
 
-It should render first after activation bust this depends on your current scrren laoyot.
+If you have browsed the plugin's source code, you might have seen some other settings available for configuration. This is because this plugin can also be used as a blueprint to set up your own custom editor. Please review the configuration class carefully again before doing so. For example, you might need to implement your own data handling.     
 
-#### Closing The Gap
+##  Packaging Slip
 
-`$context = 'normal'` // default value
-`$context = 'advanced'` // might cause gap
+Boxing an editor in is no big deal. But moving it, on the other hand, is a delicate thing:
 
-When you first install it, you might see a 50px gap between the title field and whatever follows it (probably the editor itself). This gap is an empty area to add meta boxes to. Just drag the box following the gap into it, and you should be fine. You only need to do this once (right after activating the plugin). The gap isn't by design, but ...
+> Once instantiated, the WYSIWYG editor cannot be moved around in the DOM. What this means in practical terms, is that you cannot put it in meta-boxes that can be dragged and placed elsewhere on the page.
+>
+> (https://codex.wordpress.org/Function_Reference/wp_editor)
 
-If you want to close it globally, try our ... plugin.
+Which, in fact, is exactly what we do. Putting an editor in a box and moving it around and all. Issuing file requests behind the scenes because parts of it need to be recreated each time it has been moved. So it doesn't lose its styles. Or its content. A delicate thing, indeed.
 
-NORMAL CASE:
+So in a larger system, you might not want your users to get too crazy about dragging the editor around. Though they should be safe to do so, you might want to review our [Global Meta Box Order]() plugin to lock things down a bit. 
 
-### Editor Is Rendered Last, Not First
+## License
 
-Let's assume you already have some meta boxes below the default editor, maybe pulled in from the right colum. When you now activate the plugin, leaving it's `$context` setting as is, the editor renders after all other meta boxes in its column. Just drag it in it's desired position.
+GNU GPL v2 or later

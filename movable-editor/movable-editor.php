@@ -26,6 +26,8 @@ GNU General Public License for more details.
 
 namespace MovableEditor;
 
+define(__NAMESPACE__.'\VERSION', '1.0');
+
 /**
  * Meta box & editor configuration
  *
@@ -80,8 +82,6 @@ class Config {
     /**
      * Meta box title(s)
      *
-     * See http://codex.wordpress.org/Function_Reference/add_meta_box
-     *
      * To give the box a title based on a specific post type,
      * add it as a key:
      *
@@ -99,14 +99,22 @@ class Config {
     /**
      * Editor id
      *
-     * See http://codex.wordpress.org/Function_Reference/wp_editor
+     * If set to 'content' (which is the default value), the editor
+     * is given the same id the default editor has, so it goes by
+     * as the normal post body.
+     *
+     * Which means all updating action is taken care of for us,
+     * including wp.autosave.
+     *
+     * So if you set it to something else, don't forget to register
+     * some function to WordPress' 'save_post' action hook.
      *
      * @var String
      */
-    public static $editor_id = 'movable_editor_content';
+    public static $editor_id = 'content';
 
     /**
-     * Editor title
+     * Editor configuration
      *
      * See http://codex.wordpress.org/Function_Reference/wp_editor
      *
@@ -239,20 +247,30 @@ class MovableEditor {
             call_user_func_array('add_meta_box', $config);
         });
 
-        // Replace post content with editor content before saving a post
-
-        add_filter('content_save_pre', function ($content) {
+        add_action('admin_enqueue_scripts', function () use ($config) {
 
             $screen = $this->getCurrentScreen();
 
-            if ($this->isScreenAllowed($screen) && isset($_POST[$this->editor_id])) {
+            if (!$this->isScreenAllowed($screen)) {
 
-                return $_POST[$this->editor_id];
+                return;
             }
 
-            return $content;
+            wp_enqueue_script(
 
-        }, 10, 1);
+                'movable_editor',
+                plugin_dir_url(__FILE__).'movable_editor.js',
+                array('jquery', 'jquery-ui-sortable'),
+                \MovableEditor\VERSION,
+                true
+            );
+
+            wp_localize_script('movable_editor', 'movable_editor_config', array(
+
+                'editor_id'   => $this->editor_id,
+                'meta_box_id' => $config['id']
+            ));
+        });
     }
 
     /**
