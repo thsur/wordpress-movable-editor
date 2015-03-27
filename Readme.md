@@ -65,7 +65,7 @@ Boxing an editor in is no big deal. But moving it, on the other hand, is a delic
 
 Which, in fact, is exactly what we do. Putting an editor in a box and moving it around and all. Issuing file requests behind the scenes because parts of it need to be recreated each time it has been moved. So it doesn't lose its styles. Or its content. A delicate thing, indeed.
 
-So in a larger system, you might not want your users to get too crazy about dragging the editor around. Though they should be safe to do so, you might want to review our [Global Meta Box Order]() plugin to lock things down a bit. 
+So in a larger system, you might not want your users to get too crazy about dragging the editor around. Though they should be safe to do so, you might want to review our [Global Meta Box Order](https://github.com/pontycode/wordpress-global-meta-box-order) plugin to lock things down a bit. 
 
 ## License
 
